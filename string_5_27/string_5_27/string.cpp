@@ -9,6 +9,21 @@ namespace moyu
 		strcpy(_str, str);
 		_capacity = _size;
 	}
+	//传统写法
+	//string::string(const string& str)
+	//{
+	//	_str = new char[str._capacity + 1];
+	//	strcpy(_str, str._str);
+	//	_capacity = str._capacity;
+	//	_size = str._size;
+	//}
+	
+	//现代写法
+	string::string(const string& str)
+	{
+		string str1(str._str);
+		swap(str1);
+	}
 
 	string::~string()
 	{
@@ -89,8 +104,24 @@ namespace moyu
 		_size += len;
 		return *this;
 	}
+	string& string::operator+=(const char* str)
+	{
+		append(str);
+		return *this;
+	}
+	string& string::operator+=(const char ch)
+	{
+		push_back(ch);
+		return *this;
+	}
+	string& string::operator+=(string str)
+	{
+		append(str._str);
+		return *this;
+	}
 
-	const static size_t npos = -1;
+	const size_t string::npos = -1;
+
 	string& string::insert(size_t pos, const char ch)
 	{
 		assert(pos < _size);
@@ -146,5 +177,134 @@ namespace moyu
 			_str[_size] = '\0';
 		}
 		return *this;
+	}
+
+	size_t string::find(const char ch, size_t pos) const
+	{
+		assert(pos < _size);
+		for (size_t i = pos; i < _size; i++)
+		{
+			if (_str[i] == ch)
+			{
+				return i;
+			}
+		}
+		return npos;
+	}
+	size_t string::find(const char* str, size_t pos) const
+	{
+		assert(pos < _size);
+		char* ppos = strstr(_str + pos, str);
+		return ppos - _str;
+	}
+
+	//传统写法
+	//string& string::operator=(const string& str)
+	//{
+	//	if (this != &str)
+	//	{
+	//		if (_capacity < str._capacity)
+	//			reserve(str._capacity);
+	//		memcpy(_str, str._str, str._size + 1);
+	//		_size = str._size;
+	//	}
+	//	return *this;
+	//}
+
+	//现代写法
+	string& string::operator=(string str)
+	{
+		swap(str);
+		return *this;
+	}
+
+	string& string::operator=(const char* str)
+	{
+		size_t len = strlen(str);
+		if (_capacity < len)
+			reserve(len);
+		memcpy(_str, str, len + 1);
+		_size = len;
+		return *this;
+	}
+
+	string string::substr(size_t pos, size_t len) const
+	{
+		assert(pos < _size);
+		string str;
+		if (len == npos)
+			len = _size;
+		for (size_t i = 0; i < len; i++)
+		{
+			str += _str[pos + i];
+		}
+		return str;
+	}
+
+	void string::swap(string & str)
+	{
+		std::swap(_str, str._str);
+		std::swap(_size , str._size);
+		std::swap(_capacity , str._capacity);
+	}
+
+	bool string::operator<(const string& str)
+	{
+		return strcmp(_str, str._str) < 0;
+	}
+	bool string::operator>(const string& str)
+	{
+		return !((*this) <= str);
+	}
+	bool string::operator<=(const string& str)
+	{
+		return (*this) < str || (*this) == str;
+	}
+	bool string::operator>=(const string& str)
+	{
+		return !((*this) < str);
+	}
+	bool string::operator==(const string& str)
+	{
+		return strcmp(_str, str._str) == 0;
+	}
+	bool string::operator!=(const string& str)
+	{
+		return !((*this) == str);
+	}
+
+	void string::clear()
+	{
+		*this = "";
+	}
+	istream& operator>>(istream& in, string& str)
+	{
+		str.clear();
+		char tmp[128];
+		char ch;
+		size_t i = 0;
+		in.get(ch);
+		while (ch != ' ' && ch != '\n')
+		{
+			tmp[i++] = ch;
+			if (i == 127)
+			{
+				tmp[i] = '\0';
+				str += tmp;
+				i = 0;
+			}
+			in.get(ch);
+		}
+		if (i != 0)
+		{
+			tmp[i] = '\0';
+			str += tmp;
+		}
+		return in;
+	}
+	ostream& operator<<(ostream& out, string& str)
+	{
+		out << str.c_str();
+		return out;
 	}
 }
